@@ -26,9 +26,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	re := strings.ToLower(version)
+
 	// get necessary fields
 	namespace := os.Getenv("POD_NAMESPACE")
-	filename := strings.Join([]string{project, version}, "-")           // joint the configmap name
+	filename := strings.Join([]string{project, re}, "-")                // joint the configmap name
 	filepath := filepath.Join("/data/apps", project, "tmp/config.json") // joint the tmp file path
 
 	// fmt.Println(namespace, filename, filepath)
