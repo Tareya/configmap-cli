@@ -35,7 +35,10 @@ func main() {
 
 	// judge the configmap exsit status, and create the configmap when not exsits.
 	cl := ConfigmapList(namespace)
+
 	status := ConfigmapStatus(cl, filename)
+
+	// fmt.Println(status)
 
 	if status == true {
 		fmt.Printf("Configmap %v/%v already exists.", namespace, filename)
@@ -69,12 +72,25 @@ func InitClient() *kubernetes.Clientset {
 // load the kubeconfig file
 func LoadConfig() *rest.Config {
 
-	config, err := clientcmd.BuildConfigFromFlags("", "")
+	kubeconfig := JudgeConfig()
+
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return config
+}
+
+// select the kubeconfig which env
+func JudgeConfig() string {
+
+	namespace := os.Getenv("POD_NAMESPACE")
+
+	env := strings.Split(namespace, "-app")[0]
+	kubeconfig := filepath.Join("./config", strings.Join([]string{env, ".conf"}, ""))
+
+	return kubeconfig
 }
 
 // list the configmaps
@@ -101,14 +117,21 @@ func ConfigmapStatus(cl *corev1.ConfigMapList, name string) bool {
 	// init the regexp instance
 	re := regexp.MustCompile(name)
 
+	num := 0
 	// traverse the configmap list to find the input configmap and return the result
 	for _, configmap := range cl.Items {
 		result := re.MatchString(configmap.Name)
 		if result == false {
-			continue
+			num += 0
+		} else {
+			num += 1
 		}
 	}
-	return true
+	if num > 0 {
+		return true
+	} else {
+		return false
+	}
 }
 
 // create the configmap
