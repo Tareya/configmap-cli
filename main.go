@@ -38,7 +38,13 @@ func main() {
 
 	c := ConfigmapGenerate(namespace, filename, filepath)
 
-	fmt.Println(c)
+	e := ConfigmapCreate(c)
+	if e == nil {
+		log.Fatal(e)
+		return
+	} else {
+		fmt.Printf("Configmap %v/%v created successfully", namespace, filename)
+	}
 }
 
 // init the rest client
@@ -65,6 +71,9 @@ func LoadConfig() *rest.Config {
 
 	return config
 }
+
+
+
 
 // create the configmap
 func ConfigmapCreate(c *corev1.ConfigMap) *corev1.ConfigMap {
