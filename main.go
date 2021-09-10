@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,19 +29,25 @@ func main() {
 
 	re := strings.ToLower(version)
 
-	// get necessary fields
+	// get necessary fieldss
 	namespace := os.Getenv("POD_NAMESPACE")
 	filename := strings.Join([]string{project, re}, "-")                // joint the configmap name
 	filepath := filepath.Join("/data/apps", project, "tmp/config.json") // joint the tmp file path
 
 	// fmt.Println(namespace, filename, filepath)
 
+	// check the tmp file exists
+	_, e := os.Stat(filepath)
+	if os.IsNotExist(e) {
+		fmt.Println("start to sleep")
+		time.Sleep(10 * time.Second) //
+		fmt.Println("sleep 8 sec")
+	}
+
 	// judge the configmap exsit status, and create the configmap when not exsits.
 	cl := ConfigmapList(namespace)
 
 	status := ConfigmapStatus(cl, filename)
-
-	// fmt.Println(status)
 
 	if status == true {
 		fmt.Printf("Configmap %v/%v already exists.", namespace, filename)
